@@ -58,17 +58,13 @@ int sift_down(vector<int> &h, int node, vector<pair<int,int>> &swaps) {
         int l = left_child(node);
 
         if(l < h.size() and h[l] < h[min_index]) {
-                // std::cout << "left-child of " << h[node] << " is at " << left_child(node) << ": " <<  h[left_child(node)] << std::endl;
                 min_index = l;
         }
 
         int r = right_child(node);
         if(r < h.size() and h[r]  < h[min_index]) {
-                // std::cout << "right-child of " << h[node] << " is at " << right_child(node) << ": " <<  h[right_child(node)] << std::endl;
                 min_index = r;
         }
-
-        // std::cout << ">>>" << h[min_index] << "<" << h[node] << std::endl;
 
         if(h[min_index] != h[node]) {
                 std::swap(h[min_index], h[node]);
@@ -76,11 +72,6 @@ int sift_down(vector<int> &h, int node, vector<pair<int,int>> &swaps) {
                 swaps.push_back(make_pair(node, min_index));
                 sift_down(h, min_index, swaps);
         }
-
-        // for(auto x : h) {
-                // std::cout << ":" << x << " , ";
-        // }
-        // std::cout << std::endl;
 
         return min_index;
 }
@@ -109,16 +100,8 @@ class HeapBuilder {
     swaps_.clear();
 
     for(int i = std::ceil(data_.size()/2); i >= 0 ; i--) {
-                // std::cout << ">" << i << " " << data_.size()/2 << std::endl;
-                sift_down(data_, i, swaps_);
+	sift_down(data_, i, swaps_);
     }
-        /*
-    for(auto x : data_) {
-            std::cout << ":" << x << " , ";
-    }
-    std::cout << std::endl;
-*/
-
   }
 
  public:
