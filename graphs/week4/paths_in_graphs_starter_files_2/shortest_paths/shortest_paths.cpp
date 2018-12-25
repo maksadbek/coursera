@@ -26,7 +26,7 @@ vector<string> shortest_paths(vector<vector<pair<int,int>>> &adj, int s) {
 				int to = v.first;
 				int w = v.second;
 
-				if(dist[u] != max_int && dist[u] + w < dist[to]) {
+				if(dist[u] != int_max && dist[u] + w < dist[to]) {
 					dist[to] = dist[u] + w;
 				}
 			}
@@ -37,63 +37,63 @@ vector<string> shortest_paths(vector<vector<pair<int,int>>> &adj, int s) {
 	result[s] = "0";
 
 	queue<int> q;
-        for(int i = 0; i < 1; i++) {
+	for(int i = 0; i < 1; i++) {
 		for(int u = 0; u < adj.size(); u++) {
 			for(auto v : adj[u]) {
 				int to = v.first;
 				int w = v.second;
 
-				if(dist[u] != max_int && dist[u] + w < dist[to]) {
+				if(dist[u] != int_max && dist[u] + w < dist[to]) {
 					dist[to] = dist[u] + w;
 					q.push(to);
 				}
 			}
 		}
-        }
+	}
 
 	vector<int> neg;
 	vector<bool> used(adj.size(), false);
 	
 	// do a bfs and find vertexes of negative cycles
 	while(!q.empty()) {
-	  int u = q.front();
-	  q.pop();
+		int u = q.front();
+		q.pop();
 	  
-	  if(used[u]) {
-	    continue;
-	  }
+		if(used[u]) {
+			continue;
+		}
 
-	  used[u] = true;
-	  neg.push_back(u);
+		used[u] = true;
+		neg.push_back(u);
 	  
-	  for(auto v : adj[u]) {
-	    if(!used[v.first]) {
-	      q.push(v.first);
-	    }
-	  }
+		for(auto v : adj[u]) {
+			if(!used[v.first]) {
+				q.push(v.first);
+			}
+		}
 	}
 
-        for(int i = 0; i < dist.size(); i++) {
-                if(dist[i] == max_int) {
-                        result[i] = "*";
+	for(int i = 0; i < dist.size(); i++) {
+		if(dist[i] == int_max) {
+			result[i] = "*";
 			continue;
-                }
+		}
 
 		bool negative = false;
 		for(int x : neg) {
-		  if(x == i) {
-		    negative = true;
-		    break;
-		  }
+			if(x == i) {
+				negative = true;
+				break;
+			}
 		}
 
 		if(negative) {
-		  result[i] = "-";
-		  continue;
+			result[i] = "-";
+			continue;
 		}
 
 		result[i] = to_string(dist[i]);
-        }
+	}
 
 	return result;
 }
