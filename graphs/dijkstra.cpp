@@ -27,9 +27,9 @@ int dijkstra(int s, int d, vector<vector<pair<int, int>>> g) {
 
 		// If the target vertex is reached,
 		// then stop traversing.
-		if(u==d){
-			break;
-		}
+		// 		if(u==d){
+		//	break;
+		//		}
 
 		for(auto c : g[u]) {
 			int v = c.first;
@@ -71,13 +71,14 @@ int main(){
 		adj[x - 1].push_back(make_pair(y - 1, w));
 	}
 
-	int s, d;
-	std::cin >> s >> d;
-	s--, d--;
+	int c;
+	std::cin >> c;
 
-	int distance = dijkstra(s, d, adj);
-
-	cout << distance;
+	for(int i = 0; i < c; i++) {
+	  int s, d;
+	  std::cin >> s >> d;
+	  cout << dijkstra(s-1, d-1, adj);
+	}
 
 	return 0;
 }
