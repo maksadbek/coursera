@@ -28,6 +28,8 @@ struct Bidijkstra {
     adjs[0] = adj;
     adjs[1] = r_adj;
 
+    // printf("adj[1][0] size: %lu\n", adjs[0][0].size());
+    
     dist[0].resize(adj.size(), inf);
     dist[1].resize(adj.size(), inf);
 
@@ -41,26 +43,18 @@ struct Bidijkstra {
   ll shortest_path(int s, int t) {
     ll d = inf;
     int best = -1;
-
-    cout <<" insert inot proc: " << proc.insert(98).second << endl;
-    
     for(auto u : proc) {
-      printf("%d, to %lld, from %lld *** ", u, dist[0][u], dist[1][u]);
-      printf("d was %lld ", d);
-
       if(dist[0][u] + dist[1][u] < d) {
 	best = u;
 	d = dist[0][u] + dist[1][u];
       }
-
-      printf("become: %lld", d);
-      printf("\n");
     }
     
     if(d == inf) {
       return -1;
     }
 
+    /* no need to get paths
     vector<int> path;
     int last = best;
     while(last != s) {
@@ -75,43 +69,40 @@ struct Bidijkstra {
       last = prev[1][last];
       path.push_back(last);
     }
-
-    printf("path: ");
-    for(auto x : path) {
-      printf("%d -> ", x);
-    }
-    printf("\n");
-
-    printf(">>>>>>>> to 98 %lld, from %lld <<<<<<\n", dist[0][98], dist[1][98]);
-    
+    */
 					    
     return d;
   }
 
   ll visit(int side, int s, int t) {
+    if(q[side].empty()) {
+      return -1;
+    }
     auto u = q[side].top();
     q[side].pop();
+
+    if(u.first == inf) {
+      return -2;
+    }
 
     if(visited[side][u.second]) {
       return -2;
     }
 
     visited[side][u.second] = true;
-    printf("%d %d w/ w of %lld\n", side, u.second, u.first);
+
     for(auto next : adjs[side][u.second]) {
       auto w = next.first;
       auto v = next.second;
-      printf("side: %d; adj of %d -> %d; \n", side, u.second, v);
+
       if(u.first + w < dist[side][v]) {
 	dist[side][v] = dist[side][u.second] + w;
-	printf("dist to %lld\n", dist[side][v]);
 	q[side].push(make_pair(dist[side][v], v));
 	prev[side][v] = u.second;
       }
     }
 
     if(!proc.insert(u.second).second) {
-      printf("meet-in-the-middle: %d\n", u.second);
       return shortest_path(s, t);
     }
 
@@ -127,6 +118,9 @@ struct Bidijkstra {
 
     dist[0].assign(adjs[0].size(), inf);
     dist[1].assign(adjs[0].size(), inf);
+
+    visited[0].assign(adjs[0].size(), false);
+    visited[1].assign(adjs[0].size(), false);
   }
   
   ll query(int s, int t) {
@@ -149,6 +143,8 @@ struct Bidijkstra {
 	return d_r;
       }
     }
+
+    return -1;
   }
 };
 
@@ -171,7 +167,7 @@ int main() {
   
   int t;
   scanf("%d", &t);
-  for (int i=0; i< t; ++i) {
+  for (int i=0; i < t; ++i) {
     int u, v;
     scanf("%d%d", &u, &v);
     printf("%lld\n", bidijkstra.query(u-1, v-1));
