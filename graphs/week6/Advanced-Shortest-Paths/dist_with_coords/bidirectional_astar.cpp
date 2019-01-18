@@ -13,7 +13,6 @@ const long long inf = numeric_limits<long long>::max() / 4;
 class astar {
 	vector<pair<int,int>> &coords;
 	priority_queue<pair<long long,int>, vector<pair<long long,int>>, greater<pair<long long,int>>> q[2];
-	vector<bool> used[2];
 	vector<long long> f[2];
 	vector<long long> g[2];
 	set<int> proc[2];
@@ -29,15 +28,15 @@ class astar {
 		return sqrt(delta1 + delta2);
 	}
 
-	long long shortest_path(int s, int t) {
+	double shortest_path(int s, int t) {
 		set<int> common_vertices;
 		merge(proc[0].begin(), proc[0].end(),
-				 proc[1].begin(), proc[1].end(),
-				 inserter(common_vertices, common_vertices.begin()));
+		      proc[1].begin(), proc[1].end(),
+		      inserter(common_vertices, common_vertices.begin()));
 
 		auto dist = inf;
 		for(int i : common_vertices) {
-			auto new_dist = g[0][i] + g[1][i];
+			long long new_dist = g[0][i] + g[1][i];
 			if(new_dist < dist) {
 				dist = new_dist;
 			}
@@ -50,32 +49,22 @@ class astar {
 		
 		return dist;
 	}
-	
+
 	void visit(int side, int u, int s, int t) {
-		if(used[side][u]) {
-			return;
-		}
-		
-		used[side][u] = true;
-
 		for(auto &v: adj[side][u]) {
-			auto w = v.second;
+			auto neighbor = v.first;
+			auto cost = g[side][u] + v.second;
+			if(cost < g[side][neighbor]) {
+				g[side][neighbor] = cost;
 
-			if(g[side][u] + w < g[side][v.first]) {
-				g[side][v.first] = g[side][u] + w;
-
-				auto ef = (estimate(t, v.first) + estimate(v.first, t));
-				auto er = (estimate(s, v.first) + estimate(v.first, s));
-				auto e = (ef - er)/2;
-				
+				auto e = (estimate(s, neighbor) + estimate(neighbor, t))/2;
 				if(side == backward) {
 					e = -e;
 				}
 
-				f[side][v.first] = g[side][v.first] + e;
-				q[side].push(make_pair(f[side][v.first], v.first));
-
-				proc[side].insert(v.first);
+				auto heur_cost = e + cost;
+				f[side][neighbor] = heur_cost;
+				q[side].push(make_pair(heur_cost, neighbor));
 			}
 		}
 	}
@@ -84,13 +73,12 @@ class astar {
 		if(q[side].empty()) {
 			return false;
 		}
-				
+
 		auto u = q[side].top();
 		q[side].pop();
-
 		visit(side, u.second, s, t);
-
-		// reverse the side: backward -> forward, forward -> backward
+                proc[side].insert(u.second);
+                
 		if(proc[!side].find(u.second) != proc[!side].end()) {
 			return true;
 		}
@@ -102,9 +90,6 @@ class astar {
 		g[forward].resize(adj[forward].size(), inf);
 		g[backward].resize(adj[forward].size(), inf);
 
-		used[forward].resize(adj[forward].size(), false);
-		used[backward].resize(adj[forward].size(), false);
-
 		f[forward].resize(adj[forward].size(), 0);
 		f[backward].resize(adj[forward].size(), 0);
 	}
@@ -112,9 +97,6 @@ class astar {
 	void clear() {
 		g[forward].assign(adj[forward].size(), inf);
 		g[backward].assign(adj[forward].size(), inf);
-
-		used[forward].assign(adj[forward].size(), false);
-		used[backward].assign(adj[forward].size(), false);
 
 		f[forward].assign(adj[forward].size(), 0);
 		f[backward].assign(adj[forward].size(), 0);

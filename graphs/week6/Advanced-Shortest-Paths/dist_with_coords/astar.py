@@ -26,14 +26,17 @@ def dijkstra(s, t, n):
     hops = 0
     while not pq.empty():
         heur, w, u = pq.get()
+
+        if u == t:
+            break
         
         for neighbor in adj[u] or []:
-            cost_to_neighbor = w + costs[u][neighbor]
+            cost_to_neighbor = w + costs[u][neighbor] 
             
             if cost_to_neighbor < dist[neighbor] or not discovered[neighbor]:
                 hops += 1
                 dist[neighbor] = cost_to_neighbor
-                heur = cost_to_neighbor + euclidian_dist(coords[neighbor], coords[t]) - euclidian_dist(coords[u], coords[t])
+                heur = cost_to_neighbor + euclidian_dist(coords[neighbor], coords[t])
                 pq.put((heur, cost_to_neighbor, neighbor))
                 discovered[neighbor] = True
                 parent[neighbor] = u
@@ -60,7 +63,7 @@ if __name__ == '__main__':
     for i in range(int(m)):
         u, v, d = readl()
         adj[u-1].append(v-1)
-        costs[u-1][v-1] = d
+        costs[u-1][v-1] = d # euclidian_dist(coords[u], coords[v])
 
     t, = readl()
 
