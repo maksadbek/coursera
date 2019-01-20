@@ -16,11 +16,12 @@ class astar {
 	vector<long long> f[2];
 	vector<long long> g[2];
 	set<int> proc[2];
+        vector<long long> estimates[2];
 
 	const int forward = 0;
 	const int backward = 1;
 
-	vector<vector<vector<pair<int,int>>>> adj;
+	vector<vector<vector<pair<int,int>>>> &adj;
   
 	double estimate(int v1, int v2) {
 		auto delta1 = pow(coords[v1].first - coords[v2].first, 2);
@@ -28,14 +29,26 @@ class astar {
 		return sqrt(delta1 + delta2);
 	}
 
-	double shortest_path(int s, int t) {
-		set<int> common_vertices;
-		merge(proc[0].begin(), proc[0].end(),
-		      proc[1].begin(), proc[1].end(),
-		      inserter(common_vertices, common_vertices.begin()));
+	void calc_estimates(int s, int t) {
+		for(int i = 0; i < adj[0].size(); i++) {
+			auto e = (estimate(s, i) + estimate(i, t))/2;
+			estimates[forward][i] = e;
+			estimates[backward][i] = -e;
+		}
+	}
 
+	double shortest_path(int s, int t) {
+		int index = 0;
+		if(proc[0].size() < proc[1].size()) {
+			index = 1;
+		}
+		
+		for(auto x: proc[!index]) {
+			proc[index].insert(x);
+		}
+		
 		auto dist = inf;
-		for(int i : common_vertices) {
+		for(int i : proc[index]) {
 			long long new_dist = g[0][i] + g[1][i];
 			if(new_dist < dist) {
 				dist = new_dist;
@@ -56,34 +69,34 @@ class astar {
 			auto cost = g[side][u] + v.second;
 			if(cost < g[side][neighbor]) {
 				g[side][neighbor] = cost;
-
-				auto e = (estimate(s, neighbor) + estimate(neighbor, t))/2;
-				if(side == backward) {
-					e = -e;
-				}
-
-				auto heur_cost = e + cost;
+				auto heur_cost = estimates[side][neighbor] + cost;
 				f[side][neighbor] = heur_cost;
 				q[side].push(make_pair(heur_cost, neighbor));
 			}
 		}
 	}
 
-	bool pop_and_relax(int side, int s, int t) {
+	int pop_and_relax(int side, int s, int t) {
 		if(q[side].empty()) {
-			return false;
+			return 0;
 		}
 
 		auto u = q[side].top();
 		q[side].pop();
+
+		// if this node was processed earlier, skip it.
+		if(proc[side].find(u.second) != proc[side].end()) {
+			return 0;
+		}
+		
 		visit(side, u.second, s, t);
                 proc[side].insert(u.second);
                 
 		if(proc[!side].find(u.second) != proc[!side].end()) {
-			return true;
+			return 1;
 		}
 
-		return false;
+		return 0;
 	}
 
 	void init() {
@@ -92,6 +105,9 @@ class astar {
 
 		f[forward].resize(adj[forward].size(), 0);
 		f[backward].resize(adj[forward].size(), 0);
+
+		estimates[forward].resize(adj[forward].size());
+		estimates[backward].resize(adj[forward].size());
 	}
 
 	void clear() {
@@ -106,11 +122,9 @@ class astar {
 
 		proc[forward].clear();
 		proc[backward].clear();
-			
 	}
 public:
-	astar(vector<vector<vector<pair<int,int>>>> graph, vector<pair<int,int>> &coords): coords(coords) {
-		adj = graph;
+	astar(vector<vector<vector<pair<int,int>>>> &graph, vector<pair<int,int>> &coords): coords(coords), adj(graph) {
 		init();
 	};
   
@@ -121,6 +135,7 @@ public:
 		}
 
 		clear();
+		calc_estimates(s, t);
 		
 		g[forward][s] = 0;
 		f[forward][s] = 0;
@@ -130,12 +145,22 @@ public:
 		f[backward][t] = 0;
 		q[backward].push(make_pair(0, t));
 
-		while(!q[forward].empty() and !q[backward].empty()) {
-			if(pop_and_relax(forward, s, t)) {
+		while(!q[forward].empty() or !q[backward].empty()) {
+			int forward_result = pop_and_relax(forward, s, t);
+			if(forward_result < 0) {
+				return -1;
+			}
+
+			if(forward_result == 1) {
 				return shortest_path(s, t);
 			}
 
-			if(pop_and_relax(backward, s, t)) {
+			int backward_result = pop_and_relax(backward, s, t);
+			if(backward_result < 0) {
+				return -1;
+			}
+
+			if(backward_result == 1) {
 				return shortest_path(s, t);
 			}
 		}
