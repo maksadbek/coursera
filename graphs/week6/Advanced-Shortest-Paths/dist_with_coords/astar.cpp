@@ -27,6 +27,7 @@ public:
 
 	// run returns the shortest path.
 	double query(int s, int t) {
+	   printf("query: %d %d\n", s, t);
 		if(s == t) {
 			return 0;
 		}
@@ -42,8 +43,11 @@ public:
 		while(!pq.empty()) {
 			auto u = pq.top();
 			pq.pop();
-			
+			printf("forward: %d\n", u.second);
 			auto current = u.second;
+			if(current == t) {
+			  break;
+			}
 
 			for(auto &v: g[current]) {
 			        auto cost = dist[current] + v.second;
@@ -52,6 +56,7 @@ public:
 				if(cost < dist[neighbor] or !discovered[neighbor]) {
 				        dist[neighbor] = cost;
 					auto h = heuristic_potential(neighbor, t);
+					printf("child %d with potential: %f\n", neighbor, h);
 					heur[neighbor] = h + cost;
 					pq.push(make_pair(h+cost, neighbor));
 					discovered[neighbor] = true;
